@@ -68,7 +68,9 @@ def init():
             continue
         t = threading.Thread(target = socket_listen,args = (soc, lap[c1]))
         t.start()
- 
+    
+    blockchain = Blockchain()
+    
  
  
  
@@ -112,7 +114,6 @@ class Blockchain:
         self.transactions = []
         self.state = 0
         self.chain = []
-        self.new_block(previous_hash='1', proof=100)
 
     def valid_chain(self, chain):
         last_block = chain[0]
