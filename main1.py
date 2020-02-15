@@ -43,10 +43,14 @@ def socket_listen(soc, port):
     while True:
  
         c, addr = soc.accept()
-        c.send(b'connected')
+        val='connected'
+        val=json.dumps(val).encode('utf-8')
+        c.send(val)
         msg = c.recv(1024)
         msg=json.loads(msg.decode('utf-8'))
-        c.send(b'received')
+        val='received'
+        val=json.dumps(val).encode('utf-8')
+        c.send(val)
         print(msg)
         c.close()
  
@@ -87,10 +91,10 @@ def send_msg(msg,sip):
     print(sport)
     soc.connect((sip,sport))
  
-    print(soc.recv(1024))
- 
-    soc.send(bytes(msg,'utf-8'))
-    rs=soc.recv(1024)
+    print(json.loads(soc.recv(1024).decode('utf-8')))
+    msg=json.dumps(msg).encode('utf-8')
+    soc.send(msg)
+    rs=json.loads(soc.recv(1024).decode('utf-8'))
     print(rs)
     soc.close()
     return rs
@@ -141,7 +145,3 @@ class Blockchain:
             cons()
 
 init()
- 
- 
-
-
