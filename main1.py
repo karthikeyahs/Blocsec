@@ -3,7 +3,7 @@ import requests
 import threading
 import json
  
-ip = "http://192.168.43.150:5000"
+ip = "http://192.168.43.203:5000"
 page = "/ul"
 login_p = '/logi'
 logout_p = '/logout'
@@ -53,7 +53,7 @@ def socket_listen(soc, port):
         c.send(val)
         print(msg)
         c.close()
- 
+        
 def init():
     global sport,me,myuname
     myuname=str(input("Enter username : "))
@@ -62,7 +62,7 @@ def init():
     ssockets = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in range(user_count)]
  
     sport = lap[len(get_active_users())-1]
-    me = socket.gethostbyname(socket.gethostname())
+    me = '192.168.43.192'
     print(sport)
     
     c1 = -1
@@ -73,6 +73,7 @@ def init():
         t = threading.Thread(target = socket_listen,args = (soc, lap[c1]))
         t.start()
     
+    global blockchain
     blockchain = Blockchain()
     
  
@@ -100,7 +101,6 @@ def send_msg(msg,sip):
     return rs
 
 def send_all(msg):
-    msg=json.dumps(msg).encode('utf-8')
     ul1=get_active_users()
     rsl=[]
     for us in ul1:
@@ -141,7 +141,7 @@ class Blockchain:
             'message': message,
         }
         rsl=send_all(tr)
-        if(len(rsl)!=len(get_active_users()-1)):
-            cons()
+        # if(len(rsl)!=len(get_active_users()-1)):
+            # cons()
 
 init()
