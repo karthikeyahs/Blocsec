@@ -10,5 +10,5 @@ class Pool:
     def __str__(self):
         s=''
         for el in self.q:
-            s+='Type :'+el['msg-type']+'\n'+'Timestamp : '+str(el['timestamp'])+'\n'+'Message : '+el['message']+'\n'+'Sender : '+el['sender']+'\n'+'Recipient : '+el['recipient']+'\n\n'
+            s+='Type :'+el['msg-type']+'\n'+'Timestamp : '+el['timestamp']+'\n'+'Message : '+el['message']+'\n'+'Sender : '+el['sender']+'\n'+'Recipient : '+el['recipient']+'\n\n'
         return s

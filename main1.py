@@ -70,7 +70,7 @@ def init():
     ssockets = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in range(user_count)]
  
     sport = lap[len(get_active_users())-1]
-    me = '192.168.43.46'
+    me = '192.168.43.168'
     print(sport)
     
     c1 = -1
@@ -143,7 +143,7 @@ class Blockchain:
         return True
 
     def new_transaction(self, sender, recipient, message):
-        ts = datetime.datetime.now()       
+        ts = str(datetime.datetime.now())
         tr={
             'sender': sender,
             'recipient': recipient,
