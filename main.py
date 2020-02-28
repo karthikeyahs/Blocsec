@@ -1,6 +1,7 @@
 from flask import Flask,session,render_template,request
 import mysql.connector
 import socket
+import datetime
 
 mydb = mysql.connector.connect(
   host="localhost",
@@ -54,6 +55,9 @@ def ul():
 			ans+=el[1]+' '
 		return ans
 	return 'FUCK OFF!!!!'
+@app.route('/curd',methods=['GET'])
+def curd():
+	return str(datetime.datetime.now())
 
 if __name__=='__main__':
 	app.run()

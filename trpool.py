@@ -6,6 +6,8 @@ class Pool:
         self.q.append(transaction)
         sorted(self.q,key=lambda i:i['timestamp'],reverse=True)
     def remove(self):
+        if len(self.q)==0:
+            return None
         return self.q.pop()
     def __str__(self):
         s=''

@@ -24,7 +24,13 @@ lap = [12340,12341,12342,12344,12345,12346,12347]
  
 user_count = len(lap)
  
+
 transactionPool = Pool()
+purePool = Pool()
+
+node_state=0
+listen_for_transactions_done=0
+
 # Login
 def login(user):
     d = {
@@ -41,6 +47,26 @@ def get_active_users():
     user_list = r.text.split()
     return user_list
  
+def handle_transaction(msg):
+    if(node_state==0 or node_state==1):
+        transactionPool.add(msg)
+
+def handle_msg(msg):
+    try:
+        if(msg['msg-type']=='transaction'):
+            handle_transaction(msg)
+    except Exception as e:
+        print(e)
+def f1():
+    pass
+def sink():
+    r=requests.get(url=ip+'/curd')
+    print(r.text)
+    s1=r.text
+    d1=datetime.datetime(int(s1[:4]),int(s1[5:7]),int(s1[8:10]),int(s1[11:13]),int(s1[14:16]),int(s1[17:19]))
+    print(str(d1))
+    threading.Timer(int(d1.strftime('%S'))%10,f1).start()
+
 def socket_listen(soc, port):
     print(port)
     soc.bind(('', port))
@@ -58,7 +84,7 @@ def socket_listen(soc, port):
         val='received'
         val=json.dumps(val).encode('utf-8')
         c.send(val)
-        transactionPool.add(msg)
+        handle_msg(msg)
         print(msg)
         c.close()
         
@@ -99,7 +125,7 @@ def send_msg(msg,sip):
     print(sip)
     print(sport)
     soc.connect((sip,sport))
- 
+
     print(json.loads(soc.recv(1024).decode('utf-8')))
     msg=json.dumps(msg).encode('utf-8')
     soc.send(msg)
@@ -145,14 +171,60 @@ class Blockchain:
     def new_transaction(self, sender, recipient, message):
         ts = str(datetime.datetime.now())
         tr={
-            'sender': sender,
-            'recipient': recipient,
-            'message': message,
-            'msg-type': 'transaction',
-            'timestamp': ts,
+                'sender': sender,
+                'recipient': recipient,
+                'message': message,
+                'msg-type': 'transaction',
+                'timestamp': ts,
         }
-        transactionPool.add(tr)
-        rsl=send_all(tr)
 
+        if(node_state==0):
+            transactionPool.add(tr)
+            rsl=send_all(tr)
+        else:
+            purePool.add(tr)
+
+def wait_for():
+    if(node_state==0):
+        time.sleep(5)
+        listen_for_transactions_done=1
+    elif(node_state==1):
+        time.sleep(1)
+    else:
+        time.sleep(2)
+
+def listen_for_transactions():
+    node_state=0
+    listen_for_transactions_done=0
+    t=threading.Thread(target=wait_for)
+    t.start()
+    while(True):
+        transaction1=purePool.remove()
+        if(transaction1==None or listen_for_transactions_done==1):
+            break
+        transactionPool.add(transaction1)
+        send_all(transaction1)
+    print('listening for transactions')
+
+def complete_listen():
+    node_state=1
+    t=threading.Thread(target=wait_for)
+    t.start()
+    print('Buffer period')
+
+def consensus():
+    node_state=2
+    t=threading.Thread(target=wait_for)
+    t.start()
+    print('Consensus period')
+
+def repeatedly():
+    while(True):
+        listen_for_transactions()
+        complete_listen()
+        consensus()
 
 init()
+sink()
+print(datetime.datetime.now())
+# repeatedly()
