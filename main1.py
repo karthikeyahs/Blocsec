@@ -6,8 +6,10 @@ import socket
 import requests
 import threading
 import json
+import datetime
+from trpool import Pool
  
-ip = "http://192.168.43.203:5000"
+ip = "http://192.168.43.168:5000"
 page = "/ul"
 login_p = '/logi'
 logout_p = '/logout'
@@ -22,6 +24,7 @@ lap = [12340,12341,12342,12344,12345,12346,12347]
  
 user_count = len(lap)
  
+transactionPool = Pool()
 # Login
 def login(user):
     d = {
@@ -55,6 +58,7 @@ def socket_listen(soc, port):
         val='received'
         val=json.dumps(val).encode('utf-8')
         c.send(val)
+        transactionPool.add(msg)
         print(msg)
         c.close()
         
@@ -66,7 +70,7 @@ def init():
     ssockets = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in range(user_count)]
  
     sport = lap[len(get_active_users())-1]
-    me = '192.168.43.192'
+    me = '192.168.43.46'
     print(sport)
     
     c1 = -1
@@ -137,15 +141,18 @@ class Blockchain:
             current_index += 1
 
         return True
-    
+
     def new_transaction(self, sender, recipient, message):
+        ts = datetime.datetime.now()       
         tr={
             'sender': sender,
             'recipient': recipient,
             'message': message,
+            'msg-type': 'transaction',
+            'timestamp': ts,
         }
+        transactionPool.add(tr)
         rsl=send_all(tr)
-        # if(len(rsl)!=len(get_active_users()-1)):
-            # cons()
+
 
 init()
