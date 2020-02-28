@@ -7,6 +7,7 @@ import requests
 import threading
 import json
 import datetime
+import time
 from trpool import Pool
  
 ip = "http://192.168.43.168:5000"
@@ -65,7 +66,10 @@ def sink():
     s1=r.text
     d1=datetime.datetime(int(s1[:4]),int(s1[5:7]),int(s1[8:10]),int(s1[11:13]),int(s1[14:16]),int(s1[17:19]))
     print(str(d1))
-    threading.Timer(int(d1.strftime('%S'))%10,f1).start()
+    peri=10-int(d1.strftime('%S'))%10
+    print(peri)
+    # threading.Timer(peri,f1).start()
+    time.sleep(peri)
 
 def socket_listen(soc, port):
     print(port)
@@ -96,7 +100,7 @@ def init():
     ssockets = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in range(user_count)]
  
     sport = lap[len(get_active_users())-1]
-    me = '192.168.43.168'
+    me = '192.168.43.46'
     print(sport)
     
     c1 = -1
