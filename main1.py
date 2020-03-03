@@ -82,6 +82,23 @@ def sink():
     # threading.Timer(peri,f1).start()
     time.sleep(peri)
 
+def dl():
+    print('dl is created')
+    port=5001
+    sdl = socket.socket()
+    sdl.bind(('',port))
+    sdl.listen(5)
+    while(True):
+        c,addr = sdl.accept()
+        hval='hey'
+        hval=json.dumps(hval).encode('utf-8')
+        c.send(hval)
+        nt = json.loads(c.recv(1024).decode('utf-8'))
+        print('received transaction from html')
+        blockchain.new_transaction(nt['sender'],nt['receiver'],nt['message'])
+        c.close()
+
+
 def socket_listen(soc, port):
     print(port)
     soc.bind(('', port))
@@ -120,7 +137,8 @@ def init():
             continue
         t = threading.Thread(target = socket_listen,args = (soc, lap[c1]))
         t.start()
-    
+    t = threading.Thread(target=dl)
+    t.start()
     global blockchain
     blockchain = Blockchain()
     
@@ -202,7 +220,7 @@ def wait_for():
     listen_for_transactions_done=1
 
 def listen_for_transactions():
-    global listen_for_transaction,node_state
+    global listen_for_transactions_done,node_state
     node_state=0
     listen_for_transactions_done=0
     tl=threading.Thread(target=wait_for)
@@ -219,7 +237,7 @@ def listen_for_transactions():
     print('listening for transactions')
 
 def complete_listen():
-    global listen_for_transaction,node_state
+    global listen_for_transactions_done,node_state
     node_state=1
     listen_for_transactions_done=0
     t=threading.Thread(target=wait_for)
@@ -230,7 +248,7 @@ def complete_listen():
     print('Buffer period')
 
 def consensus():
-    global listen_for_transaction,node_state,poet
+    global listen_for_transactions_done,node_state,poet
     node_state=2
     listen_for_transactions_done=0
     t=threading.Thread(target=wait_for)
@@ -253,6 +271,7 @@ def consensus():
         win_num = min(poet)
         if(win_num==random_num):
             print('I win')
+        transactionPool.remove()
     
     print('Consensus period')
 
