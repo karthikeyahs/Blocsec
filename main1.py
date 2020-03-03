@@ -58,6 +58,7 @@ def handle_transaction(msg):
 def handle_randnum(msg):
     global poet
     poet.append(msg['random-number'])
+    print('handlenum')
 
 def handle_msg(msg):
     try:
@@ -267,7 +268,8 @@ def consensus():
             'random-number': random_num,
         }
         send_all(cons)
-        print(poet)
+        while len(poet)!=len(get_active_users()):
+            continue
         win_num = min(poet)
         if(win_num==random_num):
             print('I win')
