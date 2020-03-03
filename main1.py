@@ -45,7 +45,6 @@ def login(user):
 def logout():
     r = requests.post(url = ip+logout_p,data={'luname':myuname})
  
- 
 def get_active_users():
     r = requests.post(url = ip+page, data = data)
     user_list = r.text.split()
@@ -99,7 +98,23 @@ def socket_listen(soc, port):
         handle_msg(msg)
         print(msg)
         c.close()
-        
+
+def dl():
+    print('dl is created')
+    port=5001
+    sdl = socket.socket()
+    sdl.bind(('',port))
+    sdl.listen(5)
+    while(True):
+        c,addr = sdl.accept()
+        hval='hey'
+        hval=json.dumps(hval).encode('utf-8')
+        c.send(hval)
+        nt = json.loads(c.recv(1024).decode('utf-8'))
+        print('received transaction from html')
+        blockchain.new_transaction(nt['sender'],nt['receiver'],nt['message'])
+        c.close()
+
 def init():
     global sport,me,myuname
     myuname=str(input("Enter username : "))
@@ -119,7 +134,8 @@ def init():
             continue
         t = threading.Thread(target = socket_listen,args = (soc, lap[c1]))
         t.start()
-    
+    t = threading.Thread(target=dl)
+    t.start()
     global blockchain
     blockchain = Blockchain()
     
@@ -191,6 +207,7 @@ class Blockchain:
         purePool.add(tr)
 
 def wait_for():
+    global listen_for_transactions_done,node_state
     if(node_state==0):
         time.sleep(5)
         listen_for_transactions_done=1
@@ -200,10 +217,11 @@ def wait_for():
         time.sleep(3)
 
 def listen_for_transactions():
+    global listen_for_transactions_done, node_state
     node_state=0
     listen_for_transactions_done=0
-    t=threading.Thread(target=wait_for)
-    t.start()
+    tl=threading.Thread(target=wait_for)
+    tl.start()
     while(True):
         transaction1=purePool.remove()
         if(listen_for_transactions_done==1):
@@ -215,12 +233,15 @@ def listen_for_transactions():
     print('listening for transactions')
 
 def complete_listen():
+    global listen_for_transactions_done, node_state
     node_state=1
     t=threading.Thread(target=wait_for)
     t.start()
     print('Buffer period')
 
 def consensus():
+    return
+    global listen_for_transactions_done, node_state
     node_state=2
     # I think the below thread is not required. Here, i generate a random number and send it to all and 
     # wait for 3 seconds to receive all numbers.
@@ -252,4 +273,4 @@ def repeatedly():
 init()
 sink()
 print(datetime.datetime.now())
-# repeatedly()
+repeatedly()
