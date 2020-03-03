@@ -25,3 +25,7 @@ def h2():
     tr = json.dumps(tr).encode('utf-8')
     s.send(tr)
     return render_template('transaction.html')
+
+
+if __name__=='__main__':
+    app.run()

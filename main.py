@@ -12,6 +12,9 @@ mydb = mysql.connector.connect(
 mycursor = mydb.cursor()
 print(mydb) 
 
+mycursor.execute('DELETE from users')
+mydb.commit()
+
 app = Flask(__name__)
 app.secret_key='secret'
 
