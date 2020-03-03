@@ -6,9 +6,7 @@ import netifaces as ni
 app = Flask(__name__)
 app.secret_key='secret'
 
-s = socket.socket()	
-port = 5001
-s.connect((str(ni.ifaddresses('wlan0')[ni.AF_INET][0]['addr']),port))
+
 
 @app.route('/')
 def h1():
@@ -22,9 +20,13 @@ def h2():
         'receiver':request.form.get('receiver'),
         'message':request.form.get('message'),
     }
-    print(json.loads(s.recv(1024).decode('utf-8'))) 
+    s = socket.socket()	
+    port = 5001
+    s.connect((str(ni.ifaddresses('wlan0')[ni.AF_INET][0]['addr']),port))
+    print(json.loads(s.recv(1024).decode('utf-8')))
     tr = json.dumps(tr).encode('utf-8')
     s.send(tr)
+    s.close()
     return render_template('transaction.html')
 
 

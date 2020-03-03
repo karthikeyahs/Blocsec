@@ -268,8 +268,10 @@ def consensus():
             'random-number': random_num,
         }
         send_all(cons)
-        while len(poet)!=len(get_active_users()):
+        nou=get_active_users()
+        while len(poet)!=len(nou):
             continue
+        print('done')
         win_num = min(poet)
         if(win_num==random_num):
             print('I win')
