@@ -9,6 +9,8 @@ import json
 import datetime
 import time
 from trpool import Pool
+import netifaces as ni
+import random
  
 ip = "http://192.168.43.168:5000"
 page = "/ul"
@@ -24,13 +26,14 @@ ssockets = []
 lap = [12340,12341,12342,12344,12345,12346,12347]
  
 user_count = len(lap)
- 
 
 transactionPool = Pool()
 purePool = Pool()
 
 node_state=0
 listen_for_transactions_done=0
+
+poet = []
 
 # Login
 def login(user):
@@ -52,14 +55,21 @@ def handle_transaction(msg):
     if(node_state==0 or node_state==1):
         transactionPool.add(msg)
 
+def handle_randnum(msg):
+    poet.append(msg['random-number'])
+
 def handle_msg(msg):
     try:
         if(msg['msg-type']=='transaction'):
             handle_transaction(msg)
+        elif(msg['msg-type']=='random_number'):
+            handle_randnum(msg)
     except Exception as e:
         print(e)
+
 def f1():
     pass
+
 def sink():
     r=requests.get(url=ip+'/curd')
     print(r.text)
@@ -74,11 +84,9 @@ def sink():
 def socket_listen(soc, port):
     print(port)
     soc.bind(('', port))
- 
     soc.listen()
  
     while True:
- 
         c, addr = soc.accept()
         val='connected'
         val=json.dumps(val).encode('utf-8')
@@ -100,7 +108,8 @@ def init():
     ssockets = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in range(user_count)]
  
     sport = lap[len(get_active_users())-1]
-    me = '192.168.43.46'
+    me = str(ni.ifaddresses('wlan0')[ni.AF_INET][0]['addr'])
+    print(me)
     print(sport)
     
     c1 = -1
@@ -114,8 +123,6 @@ def init():
     global blockchain
     blockchain = Blockchain()
     
- 
- 
  
 def send_msg(msg,sip):
     if(msg=='close'):
@@ -181,21 +188,16 @@ class Blockchain:
                 'msg-type': 'transaction',
                 'timestamp': ts,
         }
-
-        if(node_state==0):
-            transactionPool.add(tr)
-            rsl=send_all(tr)
-        else:
-            purePool.add(tr)
+        purePool.add(tr)
 
 def wait_for():
     if(node_state==0):
         time.sleep(5)
         listen_for_transactions_done=1
     elif(node_state==1):
-        time.sleep(1)
-    else:
         time.sleep(2)
+    else:
+        time.sleep(3)
 
 def listen_for_transactions():
     node_state=0
@@ -204,8 +206,10 @@ def listen_for_transactions():
     t.start()
     while(True):
         transaction1=purePool.remove()
-        if(transaction1==None or listen_for_transactions_done==1):
+        if(listen_for_transactions_done==1):
             break
+        elif(transaction1==None):
+            continue
         transactionPool.add(transaction1)
         send_all(transaction1)
     print('listening for transactions')
@@ -218,8 +222,25 @@ def complete_listen():
 
 def consensus():
     node_state=2
+    # I think the below thread is not required. Here, i generate a random number and send it to all and 
+    # wait for 3 seconds to receive all numbers.
     t=threading.Thread(target=wait_for)
     t.start()
+    random_num = random.random()
+    poet.append(random_num)
+    cons = {
+        'msg-type': 'random_number',
+        'random-number': random_num,
+    }
+    send_all(cons)
+    # After sending your number, wait for 3 seconds to receive a random number from every other node as 
+    # mentioned in the previous comment
+    # t1=threading.Thread(target=wait_for)
+    # t1.start()
+    win_num = min(poet)
+    if(win_num==random_num):
+        # Mining comes here
+        print('I win')
     print('Consensus period')
 
 def repeatedly():
