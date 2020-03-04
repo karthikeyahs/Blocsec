@@ -228,10 +228,10 @@ def listen_for_transactions():
     tl.start()
     while(True):
         # print('dbug\n')
-        transaction1=purePool.remove()
         if(listen_for_transactions_done==1):
             break
-        elif(transaction1==None):
+        transaction1=purePool.remove()
+        if(transaction1==None):
             continue
         transactionPool.add(transaction1)
         send_all(transaction1)
@@ -262,15 +262,16 @@ def consensus():
             continue
         random_num = random.random()
         print('my random num '+str(random_num))
-        poet.append(random_num)
         cons = {
             'msg-type': 'random_number',
             'random-number': random_num,
         }
         send_all(cons)
         nou=get_active_users()
+        poet.append(random_num)
         while len(poet)!=len(nou):
-            continue
+            print(poet)
+            pass
         print('done')
         win_num = min(poet)
         if(win_num==random_num):

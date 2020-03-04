@@ -26,10 +26,11 @@ def h1():
 def logout():
 	mycursor.execute('SELECT * FROM users WHERE uname=(%s)',(request.form.get('luname'),))
 	logged_in_users = mycursor.fetchall()
+	print(session)
 	if len(logged_in_users)!=0:
-		mycursor.execute('DELETE FROM users WHERE uname = (%s) AND ip = (%s)',(session['username'],request.remote_addr,))
+		mycursor.execute('DELETE FROM users WHERE uname = (%s) ',(session['username'],))
 		mydb.commit()
-		session.pop(session['username'],None)
+		# session.pop(session['username'],None)
 	return render_template('home.html')
 
 @app.route('/logi',methods=['POST'])
@@ -41,6 +42,7 @@ def logi():
 	print(request.remote_addr)
 	if n1 in users:
 		session['username']=n1
+		print(session['username'])
 		mycursor.execute("INSERT INTO users VALUES (%s,%s)",(n1,request.remote_addr,))
 		mydb.commit()
 		return render_template('welcome.html')

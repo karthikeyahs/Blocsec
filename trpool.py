@@ -9,6 +9,10 @@ class Pool:
         if len(self.q)==0:
             return None
         return self.q.pop()
+    def see(self):
+        if len(self.q)==0:
+            return None
+        return self.q[-1]
     def is_empty(self):
         return len(self.q)==0
     def __str__(self):
