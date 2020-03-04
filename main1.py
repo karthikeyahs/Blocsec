@@ -76,10 +76,11 @@ def sink():
     r=requests.get(url=ip+'/curd')
     print(r.text)
     s1=r.text
-    d1=datetime.datetime(int(s1[:4]),int(s1[5:7]),int(s1[8:10]),int(s1[11:13]),int(s1[14:16]),int(s1[17:19]))
+    d1=datetime.datetime(int(s1[:4]),int(s1[5:7]),int(s1[8:10]),int(s1[11:13]),int(s1[14:16]),int(s1[17:19]),int(s1[20:26]))
     print(str(d1))
     peri=10-int(d1.strftime('%S'))%10
     print(peri)
+    peri=float(peri)-1.0+float(d1.strftime('%f'))/1000000.0
     # threading.Timer(peri,f1).start()
     time.sleep(peri)
 
@@ -234,6 +235,8 @@ def listen_for_transactions():
         if(transaction1==None):
             continue
         transactionPool.add(transaction1)
+        print('sending')
+        print(transaction1)
         send_all(transaction1)
     print('listening for transactions')
 
@@ -270,13 +273,13 @@ def consensus():
         nou=get_active_users()
         poet.append(random_num)
         while len(poet)!=len(nou):
-            print(poet)
+            # print(poet)
             pass
         print('done')
         win_num = min(poet)
         if(win_num==random_num):
             print('I win')
-        transactionPool.remove()
+        print(transactionPool.remove())
     
     print('Consensus period')
 
