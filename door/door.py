@@ -2,6 +2,7 @@ from flask import Flask,session,render_template,request
 import socket
 import json
 import netifaces as ni
+import time
 
 app = Flask(__name__)
 app.secret_key='secret'
@@ -27,6 +28,7 @@ def h2():
     tr = json.dumps(tr).encode('utf-8')
     s.send(tr)
     s.close()
+    time.sleep(3)
     return render_template('transaction.html')
 
 
