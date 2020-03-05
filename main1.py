@@ -11,6 +11,8 @@ import time
 from trpool import Pool
 import netifaces as ni
 import random
+import pymongo
+import hashlib
  
 ip = "http://192.168.43.168:5000"
 page = "/ul"
@@ -20,6 +22,9 @@ data = {
     'num' : '1'
 }
  
+myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+mydb = myclient["blockchain"]
+
 sport = 0
 ssockets = []
  
@@ -29,6 +34,7 @@ user_count = len(lap)
 
 transactionPool = Pool()
 purePool = Pool()
+blockPool = Pool()
 
 poet=[]
 
@@ -60,12 +66,26 @@ def handle_randnum(msg):
     poet.append(msg['random-number'])
     print('handlenum')
 
+def handle_block(block_received):
+    if(validate_block(block_received)):
+        mydb.blockchain.insert_one(block_received)
+    else:
+        # Hash comparison wrong
+
+def validate_block(block_received):
+    last_block = mydb.blockchain.find().sort([('timestamp', -1)]).limit(1)
+    if(last_block['parent_hash']==block_received['parent_hash']):
+        return True
+    return False
+
 def handle_msg(msg):
     try:
         if(msg['msg-type']=='transaction'):
             handle_transaction(msg)
         elif(msg['msg-type']=='random_number'):
             handle_randnum(msg)
+        elif(msg['msg-type']=='block'):
+            handle_block(msg)
     except Exception as e:
         print(e)
 
@@ -119,6 +139,21 @@ def socket_listen(soc, port):
         print(msg)
         c.close()
         
+
+def create_genesis_block():
+    genesis = {
+        'sender':'aaa',
+        'receiver':'bbb',
+        'timestamp':'1234',
+        'random_num':'0.123456',
+        'transaction_hash':'0000000000000000',
+        'parent_hash':'0000000000000000',
+        'msg-type':'block',
+        'message':'Genesis block',
+    }
+    mydb.blockchain.insert_one(genesis)
+
+
 def init():
     global sport,me,myuname
     myuname=str(input("Enter username : "))
@@ -140,6 +175,11 @@ def init():
         t.start()
     t = threading.Thread(target=dl)
     t.start()
+
+    create_genesis_block()
+    t1 = threading.Thread(target=mine)
+    t1.start()
+    
     global blockchain
     blockchain = Blockchain()
     
@@ -199,11 +239,11 @@ class Blockchain:
 
         return True
 
-    def new_transaction(self, sender, recipient, message):
+    def new_transaction(self, sender, receiver, message):
         ts = str(datetime.datetime.now())
         tr={
                 'sender': sender,
-                'recipient': recipient,
+                'receiver': receiver,
                 'message': message,
                 'msg-type': 'transaction',
                 'timestamp': ts,
@@ -276,11 +316,42 @@ def consensus():
             pass
         print('done')
         win_num = min(poet)
-        if(win_num==random_num):
-            print('I win')
-        print(transactionPool.remove())
-    
+        
+        t = threading.Thread(target=if_I_am_winner)
+        t.start()
+
+        transaction_mined = transactionPool.remove()
+        
     print('Consensus period')
+
+def if_I_am_winner():
+    if(win_num==random_num):
+        print('I win')
+        block={
+            'sender':str(transaction_mined['sender']),
+            'receiver':str(transaction_mined['receiver']),
+            'timestamp':str(transaction_mined['timestamp']),
+            'random_num':str(cons['random_number']),
+            'message':str(transaction_mined['message']),
+            'msg-type':'block',
+        }
+        blockPool.add(block)
+
+def mine():
+    while(blockPool.is_empty()):
+        continue
+    
+    block = blockPool.remove()
+    transaction_hash = hashlib.sha256(block['message'].encode())
+    parent_block_cursor = mydb.blockchain.find().sort([('timestamp', -1)]).limit(1)
+    parent_block_string = parent_block_cursor[0]['sender']+parent_block_cursor[0]['receiver']+parent_block_cursor[0]['timestamp']+parent_block_cursor[0]['random_num']+parent_block_cursor[0]['transaction_hash']+parent_block_cursor[0]['parent_hash']+parent_block_cursor[0]['msg-type']+parent_block_cursor[0]['message']
+    print(parent_block_string)
+    parent_hash = hashlib.sha256(parent_block_string.encode())
+    print(parent_hash.hexdigest())
+    block['transaction_hash'] = transaction_hash
+    block['parent_hash'] = parent_hash
+    mydb.blockchain.insert_one(block)
+    send_all(block)
 
 def repeatedly():
     while(True):
