@@ -253,11 +253,11 @@ class Blockchain:
 def wait_for():
     global listen_for_transactions_done,node_state
     if(node_state==0):
-        time.sleep(0.5)
+        time.sleep(4.6)
     elif(node_state==1):
-        time.sleep(0.2)
+        time.sleep(2)
     else:
-        time.sleep(0.3)
+        time.sleep(3)
     listen_for_transactions_done=1
 
 def listen_for_transactions():
@@ -317,8 +317,8 @@ def consensus():
         print('done')
         win_num = min(poet)
         
-        t = threading.Thread(target=if_I_am_winner)
-        t.start()
+        # t = threading.Thread(target=if_I_am_winner)
+        # t.start()
 
         transaction_mined = transactionPool.remove()
         
@@ -358,6 +358,7 @@ def repeatedly():
         listen_for_transactions()
         complete_listen()
         consensus()
+        sink()
 
 init()
 sink()
