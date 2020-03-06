@@ -82,7 +82,7 @@ class Blockchain:
         mydb.blockchain.insert_one(block)
 
     def update_transactions(self,msg):
-        for el in self.transactions:
+        for el in self.transactions.q:
             if(el['tid']==msg['tid']):
                 el['rlist'].append(msg['rnum'])
                 break

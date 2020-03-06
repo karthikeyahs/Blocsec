@@ -9,12 +9,12 @@ class Pool:
             'rlist':[],
             'traction':transaction
         })
-        sorted(self.q,key=lambda i:i['tid'],receive=True)
+        sorted(self.q,key=lambda i:i['tid'],reverse=True)
     def remove(self):
         if len(self.q)==0:
             return None
         temp=self.q.remove()
-        sorted(self.q,key=lambda i:i['tid'],receive=True)
+        sorted(self.q,key=lambda i:i['tid'],reverse=True)
         return temp
     def see(self):
         if len(self.q)==0:
@@ -29,3 +29,6 @@ class Pool:
             for e1 in el['rlist']:
                 s+=str(e1)+'\n'
         return s
+    
+    def __iter__():
+        return self.q
