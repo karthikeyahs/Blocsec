@@ -58,6 +58,7 @@ class Blockchain:
             'tid':tr['id'],
             'rnum':random.random(),
             'msg-type':'random_number',
+            'me':'karthikeya',
         }
         self.update_transactions(rnummsg)
         return([tr,rnummsg])

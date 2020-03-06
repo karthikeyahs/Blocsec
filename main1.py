@@ -82,6 +82,12 @@ def dl():
         hval=json.dumps(hval).encode('utf-8')
         c.send(hval)
         nt = json.loads(c.recv(1024).decode('utf-8'))
+        try:
+            nt['logout']
+            logout()
+        except Exception as E:
+            c.close()
+            return
         print('received transaction from html')
         temp=blockchain.new_transaction(nt['sender'],nt['receiver'],nt['message'])
         send_all(temp[0])
@@ -153,16 +159,16 @@ def a_send_msg(msg,sip):
         logout()
     
     soc = socket.socket()
-    print('portszz')
-    print(sip)
-    print(sport)
+    # print('portszz')
+    # print(sip)
+    # print(sport)
     soc.connect((sip,sport))
 
-    print(json.loads(soc.recv(1024).decode('utf-8')))
+    # print(json.loads(soc.recv(1024).decode('utf-8')))
     msg=json.dumps(msg).encode('utf-8')
     soc.send(msg)
     rs=json.loads(soc.recv(1024).decode('utf-8'))
-    print(rs)
+    # print(rs)
     soc.close()
     return rs
 

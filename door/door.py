@@ -31,6 +31,19 @@ def h2():
     time.sleep(3)
     return render_template('transaction.html')
 
+@app.route('/logout', methods=['POST'])
+def h3():
+    tr={
+        'logout':1,
+    }
+    s = socket.socket()	
+    port = 5001
+    s.connect((str(ni.ifaddresses('wlan0')[ni.AF_INET][0]['addr']),port))
+    print(json.loads(s.recv(1024).decode('utf-8')))
+    tr = json.dumps(tr).encode('utf-8')
+    s.send(tr)
+    s.close()
+    return render_template('transaction.html')
 
 if __name__=='__main__':
     app.run()
