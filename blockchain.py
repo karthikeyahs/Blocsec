@@ -2,6 +2,7 @@ import hashlib
 import pymongo
 import random
 from trpool import Pool
+import datetime
  
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 mydb = myclient["blockchain"]
@@ -13,19 +14,20 @@ class Blockchain:
         self.chain = []
         self.create_genesis_block()
         self.transactions=Pool()
+        print(self.transactions)
     
     def create_genesis_block(self):
-    genesis = {
-        'sender':'aaa',
-        'receiver':'bbb',
-        'timestamp':'1234',
-        'random_num':'0.123456',
-        'transaction_hash':'0000000000000000',
-        'parent_hash':'0000000000000000',
-        'msg-type':'block',
-        'message':'Genesis block',
-    }
-    mydb.blockchain.insert_one(genesis)
+        genesis = {
+            'sender':'aaa',
+            'receiver':'bbb',
+            'timestamp':'1234',
+            'random_num':'0.123456',
+            'transaction_hash':'0000000000000000',
+            'parent_hash':'0000000000000000',
+            'msg-type':'block',
+            'message':'Genesis block',
+        }
+        mydb.blockchain.insert_one(genesis)
 
     def valid_chain(self, chain):
         last_block = chain[0]
@@ -51,7 +53,7 @@ class Blockchain:
                 'msg-type': 'transaction',
                 'id': ts,
         }
-        transactions.add(tr)
+        self.transactions.add(tr)
         rnummsg={
             'tid':tr['id'],
             'rnum':random.random(),
@@ -80,7 +82,7 @@ class Blockchain:
         mydb.blockchain.insert_one(block)
 
     def update_transactions(self,msg):
-        for el in transactions:
+        for el in self.transactions:
             if(el['tid']==msg['tid']):
                 el['rlist'].append(msg['rnum'])
                 break
