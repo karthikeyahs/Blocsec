@@ -1,10 +1,10 @@
 <html>
     <body>
         <form action='/generate_new_transaction' method="POST">
-            <input type='text' name='sender' id='sender'>
-            <input type='text' name='receiver' id='receiver'>
-            <input type='text' name='message' id='message'>
-            <button type='submit' name='Generate' value="Generate" onClick="this.disabled=true;this.value='sending..';this.form.submit();">Click me</button>
+            <input type='hidden' name='sender' id='sender' value='Karthikeya'>
+            <input type='hidden' name='receiver' id='receiver' value='Karthikeya door'>
+            <input type='hidden' name='message' id='message' value='Open my door'>
+            <button type='submit' name='Generate' value="Generate" onClick="this.disabled=true;this.value='sending..';this.form.submit();">Open door</button>
         </form>
     </body>
 </html>
