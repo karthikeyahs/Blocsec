@@ -3,20 +3,29 @@ class Pool:
     def __init__(self):
         self.q = []
     def add(self,transaction):
-        self.q.append(transaction)
-        sorted(self.q,key=lambda i:i['timestamp'],reverse=True)
+        tid=transaction['id']
+        self.q.append({
+            'tid':tid,
+            'rlist':[],
+            'traction':transaction
+        })
+        sorted(self.q,key=lambda i:i['tid'],receive=True)
     def remove(self):
         if len(self.q)==0:
             return None
-        return self.q.pop()
+        temp=self.q.remove()
+        sorted(self.q,key=lambda i:i['tid'],receive=True)
+        return temp
     def see(self):
         if len(self.q)==0:
             return None
-        return self.q[-1]
+        return self.q[0]
     def is_empty(self):
         return len(self.q)==0
     def __str__(self):
         s=''
         for el in self.q:
-            s+='Type :'+el['msg-type']+'\n'+'Timestamp : '+el['timestamp']+'\n'+'Message : '+el['message']+'\n'+'Sender : '+el['sender']+'\n'+'Recipient : '+el['recipient']+'\n\n'
+            s+=str(el['tid'])+'\n'
+            for e1 in el['rlist']:
+                s+=str(e1)+'\n'
         return s
