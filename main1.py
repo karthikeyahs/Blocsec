@@ -141,7 +141,7 @@ def b_send_msg():
     global message_queue
     while(True):
         if(len(message_queue)!=0):
-            m1=message_queue.remove()
+            m1=message_queue.pop(0)
             a_send_msg(m1[0],m1[1])
 
 

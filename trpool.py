@@ -13,7 +13,7 @@ class Pool:
     def remove(self):
         if len(self.q)==0:
             return None
-        temp=self.q.remove()
+        temp=self.q.pop()
         sorted(self.q,key=lambda i:i['tid'],reverse=True)
         return temp
     def see(self):
