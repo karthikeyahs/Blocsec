@@ -28,7 +28,7 @@ def logout():
 	logged_in_users = mycursor.fetchall()
 	print(session)
 	if len(logged_in_users)!=0:
-		mycursor.execute('DELETE FROM users WHERE uname = (%s) ',(session['username'],))
+		mycursor.execute('DELETE FROM users WHERE uname = (%s) ',(request.form.get('luname'),))
 		mydb.commit()
 		# session.pop(session['username'],None)
 	return render_template('home.html')
