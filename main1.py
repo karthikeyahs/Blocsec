@@ -13,6 +13,8 @@ import random
 import pymongo
 import hashlib
 from blockchain import Blockchain
+import sys
+import _thread
  
 ip = "http://192.168.43.168:5000"
 
@@ -39,10 +41,21 @@ def login(user):
         'uname' : user
     }
     r = requests.post(url = ip+login_p, data = d)
+    return r.text
  
 def logout():
+    print(threading.get_ident())
     r = requests.post(url = ip+logout_p,data={'luname':myuname})
- 
+    print('Successfully Logged out from server')
+    cclose()
+    print('Successfully Closed all sockets')
+    try:
+        _thread.interrupt_main()
+    except KeyboardInterrupt:
+        _thread.interrupt_main()
+        pass
+    _thread.interrupt_main()
+    print('returning')
  
 def get_active_users():
     r = requests.post(url = ip+page, data = data)
@@ -83,19 +96,19 @@ def dl():
         hval=json.dumps(hval).encode('utf-8')
         c.send(hval)
         nt = json.loads(c.recv(1024).decode('utf-8'))
-        try:
-            nt['logout']
+
+        if 'logout' in nt.keys():
             logout()
             c.close()
+            _thread.interrupt_main()
             return
-        except Exception as E:
-            pass
-        print('received transaction from html')
-        temp=blockchain.new_transaction(nt['sender'],nt['receiver'],nt['message'])
-        send_all(temp[0])
-        send_all(temp[1])        
-        c.close()
-
+        else:
+            print(threading.get_ident())
+            print('received transaction from html')
+            temp=blockchain.new_transaction(nt['sender'],nt['receiver'],nt['message'])
+            send_all(temp[0])
+            send_all(temp[1])        
+            c.close()
 
 def socket_listen(soc, port):
     print(port)
@@ -119,12 +132,11 @@ def socket_listen(soc, port):
 
 def init():
     global sport,me,myuname
-    myuname=str(input("Enter username : "))
-    login(myuname)
+    myuname=sys.argv[1]
+    sport=int(login(myuname))
     global ssockets
     ssockets = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in range(user_count)]
- 
-    sport = lap[len(get_active_users())-1]
+
     me = str(ni.ifaddresses('wlan0')[ni.AF_INET][0]['addr'])
     print(me)
     print(sport)
@@ -132,7 +144,7 @@ def init():
     c1 = -1
     for soc in ssockets:
         c1 += 1
-        if(lap[c1] == sport): 
+        if(lap[c1] == sport):
             continue
         threading.Thread(target = socket_listen,args = (soc, lap[c1])).start()
 
@@ -154,11 +166,11 @@ def b_send_msg():
 
 
 def a_send_msg(msg,sip):
-    if(msg=='close'):
-        cclose()
+    # if(msg=='close'):
+    #     cclose()
  
-    if(msg == 'logout'):
-        logout()
+    # if(msg == 'logout'):
+    #     logout()
     
     soc = socket.socket()
     # print('portszz')
@@ -166,7 +178,7 @@ def a_send_msg(msg,sip):
     # print(sport)
     soc.connect((sip,sport))
 
-    # print(json.loads(soc.recv(1024).decode('utf-8')))
+    print(json.loads(soc.recv(1024).decode('utf-8')))
     msg=json.dumps(msg).encode('utf-8')
     soc.send(msg)
     rs=json.loads(soc.recv(1024).decode('utf-8'))

@@ -41,12 +41,19 @@ def logi():
 	# print(request.headers)
 	print(request.remote_addr)
 	if n1 in users:
-		session['username']=n1
-		print(session['username'])
-		mycursor.execute("INSERT INTO users VALUES (%s,%s)",(n1,request.remote_addr,))
-		mydb.commit()
-		return render_template('welcome.html')
-	return render_template('home.html')
+		try:
+			session['username']=n1
+			print(session['username'])
+			portte=-1
+			mycursor.execute('select port from uports where uname=%s',(n1,))
+			portte=mycursor.fetchall()[0][0]
+			mycursor.execute("INSERT INTO users VALUES (%s,%s)",(n1,request.remote_addr,))
+			mydb.commit()
+		except Exception as E:
+			print(E)
+			return str(portte)
+		return str(portte)
+	return 'FUCK OFF'
 
 
 @app.route('/ul',methods=['POST'])

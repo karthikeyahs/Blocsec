@@ -3,6 +3,7 @@ import socket
 import json
 import netifaces as ni
 import time
+import _thread
 
 app = Flask(__name__)
 app.secret_key='secret'
@@ -44,9 +45,15 @@ def h3():
     tr = json.dumps(tr).encode('utf-8')
     s.send(tr)
     s.close()
+    try:
+        _thread.interrupt_main()
+    except KeyboardInterrupt:
+        _thread.interrupt_main()
+        pass
+    _thread.interrupt_main()
     return render_template('transaction.html')
 
 
 
 if __name__=='__main__':
-    app.run(host='0.0.0.0', port='5002')
+    app.run(host='127.0.0.1', port='5002')
