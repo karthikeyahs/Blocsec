@@ -9,11 +9,12 @@ mydb = myclient["blockchain"]
 
 
 class Blockchain:
-    def __init__(self):
+    def __init__(self,me):
         self.state = 0
         self.chain = []
         self.create_genesis_block()
         self.transactions=Pool()
+        self.me=me
         print(self.transactions)
     
     def create_genesis_block(self):
@@ -58,7 +59,7 @@ class Blockchain:
             'tid':tr['id'],
             'rnum':random.random(),
             'msg-type':'random_number',
-            'me':'adithya',
+            'me':me,
         }
         self.update_transactions(rnummsg)
         return([tr,rnummsg])

@@ -52,7 +52,10 @@ def logout():
     try:
         _thread.interrupt_main()
     except KeyboardInterrupt:
-        _thread.interrupt_main()
+        try:
+            _thread.interrupt_main()
+        except KeyboardInterrupt:
+            pass
         pass
     _thread.interrupt_main()
     print('returning')
@@ -151,7 +154,7 @@ def init():
     threading.Thread(target=dl).start()
     threading.Thread(target=b_send_msg).start()
     global blockchain
-    blockchain = Blockchain()
+    blockchain = Blockchain(sys.argv[1])
     
 def send_msg(msg,sip):
     global message_queue
