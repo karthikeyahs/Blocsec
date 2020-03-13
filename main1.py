@@ -60,6 +60,7 @@ def handle_block(block_received):
 
 
 def handle_msg(msg):
+    print(threading.get_ident())
     try:
         if(msg['msg-type']=='transaction'):
             handle_transaction(msg)
@@ -85,9 +86,10 @@ def dl():
         try:
             nt['logout']
             logout()
-        except Exception as E:
             c.close()
             return
+        except Exception as E:
+            pass
         print('received transaction from html')
         temp=blockchain.new_transaction(nt['sender'],nt['receiver'],nt['message'])
         send_all(temp[0])

@@ -86,5 +86,9 @@ class Blockchain:
         for el in self.transactions.q:
             if(el['tid']==msg['tid']):
                 el['rlist'].append(msg['rnum'])
-                break
+                return
+        msg['id']=msg['tid']
+        self.transactions.add(msg)
+        self.update_transactions(msg)
+        
     
