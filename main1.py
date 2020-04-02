@@ -28,6 +28,7 @@ data = {
 
 sport = 0
 ssockets = []
+chain_set=[]
  
 lap = [12340,12341,12342,12344,12345,12346,12347]
  
@@ -66,14 +67,25 @@ def get_active_users():
     return user_list
  
 def handle_transaction(msg):
-    send_all(blockchain.new_transaction(msg['sender'],msg['receiver'],msg['message'])[1])
+    send_all(blockchain.new_transaction(msg['sender'],msg['receiver'],msg['message'],msg['id'])[1])
 
 def handle_randnum(msg):
     blockchain.update_transactions(msg)
 
-def handle_block(block_received):
-    pass
+def handle_blockchain_request(blockchain_request):
+    # mybl=mydb.test.find({})
+    # bllt=[]
+    # for el in mybl:
+    #     bllt.append(el)
+    bllt=blockchain.get_blockchain()
+    print(bllt)
+    a={'msg-type':'blockchain','blockchain':bllt}
+    send_msg(a,blockchain_request['sip'])
 
+def handle_blockchain(received_blockchain):
+    global chain_set
+    received_blockchain=received_blockchain['blockchain']
+    chain_set.append(blockchain)
 
 def handle_msg(msg):
     print(threading.get_ident())
@@ -82,8 +94,10 @@ def handle_msg(msg):
             handle_transaction(msg)
         elif(msg['msg-type']=='random_number'):
             handle_randnum(msg)
-        elif(msg['msg-type']=='block'):
-            handle_block(msg)
+        elif(msg['msg-type']=='blockchain_request'):
+            handle_blockchain_request(msg)
+        elif(msg['msg-type']=='blockchain'):
+            handle_blockchain(msg)
     except Exception as e:
         print(e)
 
@@ -114,6 +128,7 @@ def dl():
             c.close()
 
 def socket_listen(soc, port):
+    print('listening on')
     print(port)
     soc.bind(('', port))
     soc.listen()
@@ -125,11 +140,12 @@ def socket_listen(soc, port):
         c.send(val)
         msg = c.recv(1024)
         msg=json.loads(msg.decode('utf-8'))
+        print('received')
+        print(msg)
         val='received'
         val=json.dumps(val).encode('utf-8')
         c.send(val)
         handle_msg(msg)
-        print(msg)
         c.close()
 
 
@@ -142,6 +158,7 @@ def init():
 
     me = str(ni.ifaddresses('wlan0')[ni.AF_INET][0]['addr'])
     print(me)
+    print('sport')
     print(sport)
     
     c1 = -1
@@ -155,6 +172,7 @@ def init():
     threading.Thread(target=b_send_msg).start()
     global blockchain
     blockchain = Blockchain(sys.argv[1])
+    threading.Thread(target=chek).start()
     
 def send_msg(msg,sip):
     global message_queue
@@ -181,8 +199,10 @@ def a_send_msg(msg,sip):
     # print(sport)
     soc.connect((sip,sport))
 
-    print(json.loads(soc.recv(1024).decode('utf-8')))
+    s1=json.loads(soc.recv(1024).decode('utf-8'))
     msg=json.dumps(msg).encode('utf-8')
+    print('sending')
+    print(msg)
     soc.send(msg)
     rs=json.loads(soc.recv(1024).decode('utf-8'))
     # print(rs)
@@ -201,6 +221,73 @@ def send_all(msg):
 def cclose():
     for s in ssockets:
         s.close()
+
+def get_majority_element(n_list):
+    fr=0
+    me=-1
+    for el in n_list:
+        if type(me)==type(el) and me==el:
+            fr=fr+1
+        else:
+            fr=fr-1
+        if fr==0 or -1:
+            me=el
+    fr=0
+    fl=False
+    for el in n_list:
+        if el==me:
+            fr=fr+1
+    if fr>len(n_list)/2:
+        fl=True
+    return me,fl
+
+def validate_and_update(update_necessary=True):
+    global chain_set,me
+    print(me)
+    sm=blockchain.valid_chain()
+    if sm==False or update_necessary:
+        blockchain.update_state=True
+        # u1=mydb.test.find({})
+        # l1=[]
+        # for el in u1:
+        #     l1.append(el)
+        chain_set.append(blockchain.get_blockchain())
+        print(chain_set)
+        send_all({'msg-type':'blockchain_request','sip':me})
+        nu=get_active_users()
+        blockchain.clear_blockchain()
+        blockchain.create_genesis_block()
+        while len(chain_set)!=nu:
+            pass
+        if len(chain_set)==1:
+            blockchain.update_state=False
+            return
+        maxl=[len(el) for el in chain_set]
+        maxl,is_there=get_majority_element(maxl)
+        if if_there==False:
+            maxl=min([len(el) for el in chain_set])
+        for el in range(1,maxl):
+            blockchain.insert_block(get_majority_element([el1[el] for el1 in chain_set])[0])
+        chain_set=[]
+        blockchain.update_state=False
+
+def chek():
+    global blockchain
+    while True:
+        if len(blockchain.mineadd)!=0 and blockchain.update_state==False:
+            # sm=blockchain.valid_chain()
+            # print('valid chain')
+            # print(sm)
+            # if sm:
+            #     temp=blockchain.mineadd.pop()
+            #     blockchain.mine(temp)
+            # else:
+            #     blockchain.update_chain()
+            # validate_and_update(1)
+            temp=blockchain.mineadd.pop()
+            blockchain.mine(temp)
+
+        time.sleep(0.5)
 
 
 

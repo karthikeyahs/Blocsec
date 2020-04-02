@@ -4,6 +4,12 @@ class Pool:
         self.q = []
     def add(self,transaction):
         tid=transaction['id']
+        for el in self.q:
+            if el['tid']==transaction['id']:
+                el['traction']=transaction
+                sorted(self.q,key=lambda i:i['tid'],reverse=True)
+                return
+
         self.q.append({
             'tid':tid,
             'rlist':[],
@@ -27,7 +33,7 @@ class Pool:
         for el in self.q:
             s+=str(el['tid'])+'\n'
             for e1 in el['rlist']:
-                s+=str(e1)+'\n'
+                s+='\t'+str(e1)+'\n'
         return s
     
     def __iter__():
