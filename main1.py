@@ -283,7 +283,7 @@ def chek():
             #     blockchain.mine(temp)
             # else:
             #     blockchain.update_chain()
-            # validate_and_update(1)
+            validate_and_update(1)
             temp=blockchain.mineadd.pop()
             blockchain.mine(temp)
 
